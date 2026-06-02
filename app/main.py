@@ -33,7 +33,7 @@ async def modo_texto() -> None:
         Panel.fit(
             "[bold cyan]Jarvis[/bold cyan] — assistente pessoal (texto)\n"
             f"Modelo: [yellow]{settings.jarvis_model}[/yellow]\n"
-            "Digite sua mensagem. Use [bold]sair[/bold] para encerrar.",
+            "Digite sua mensagem. Use [bold]vai dormir[/bold] para encerrar.",
             border_style="cyan",
         )
     )
@@ -44,13 +44,13 @@ async def modo_texto() -> None:
         try:
             user_input = console.input("\n[bold green]você[/bold green] › ").strip()
         except (EOFError, KeyboardInterrupt):
-            console.print("\n[dim]Até logo, Wilson.[/dim]")
+            console.print("\n[dim]Boa noite, Wilson.[/dim]")
             break
 
         if not user_input:
             continue
-        if user_input.lower() in {"sair", "exit", "quit"}:
-            console.print("[dim]Até logo, Wilson.[/dim]")
+        if "vai dormir" in user_input.lower():
+            console.print("[dim]Boa noite, Wilson.[/dim]")
             break
 
         with console.status("[cyan]Jarvis pensando...[/cyan]"):
@@ -76,7 +76,7 @@ async def modo_voz(forcar_ptt: bool = False) -> None:
             f"Modelo: [yellow]{settings.jarvis_model}[/yellow] | "
             f"STT: [yellow]{settings.jarvis_stt_model}[/yellow] | "
             f"voz: [yellow]{settings.jarvis_openai_voice}[/yellow]\n"
-            f"Ativação: [bold]{ativacao}[/bold] · diga [bold]sair[/bold] para encerrar.",
+            f"Ativação: [bold]{ativacao}[/bold] · diga [bold]vai dormir[/bold] para encerrar.",
             border_style="cyan",
         )
     )
@@ -113,9 +113,9 @@ async def modo_voz(forcar_ptt: bool = False) -> None:
             continue
 
         console.print(f"[bold green]você[/bold green] › {texto}")
-        if texto.lower().strip(" .!?") in {"sair", "encerrar", "tchau"}:
-            speaker.say("Até logo, Wilson.")
-            console.print("[dim]Até logo, Wilson.[/dim]")
+        if "vai dormir" in texto.lower():
+            speaker.say("Boa noite, senhor. Entrando em modo de repouso.")
+            console.print("[dim]Boa noite, Wilson.[/dim]")
             break
 
         with console.status("[cyan]🧠 pensando...[/cyan]"):
