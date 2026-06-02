@@ -16,6 +16,9 @@ PyYAML>=6.0              # perfil de memória estruturada
 pytest>=8.0
 pytest-asyncio>=0.23
 
+# --- Banco de dados (opcional; só se for usar consultar_postgres) ---
+# psycopg[binary]>=3.1
+
 # =====================================================================
 # VOZ — habilitar somente na fase de voz (podem exigir build no macOS).
 # =====================================================================

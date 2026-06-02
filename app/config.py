@@ -38,6 +38,10 @@ class Settings(BaseSettings):
     gemini_api_key: str | None = None
     ollama_api_base: str | None = None
 
+    # --- Banco de dados (ferramentas técnicas) ---
+    # String de conexão PostgreSQL, ex.: postgresql://user:senha@host:5432/db
+    database_url: str | None = None
+
     # --- Voz (fases finais) ---
     picovoice_access_key: str | None = None
 
