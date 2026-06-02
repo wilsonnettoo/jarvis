@@ -1,0 +1,26 @@
+# =====================================================================
+# Jarvis — dependências
+# Etapa 0 (fundação texto-only). As dependências de voz estão listadas
+# mais abaixo, comentadas, para serem habilitadas na fase de voz.
+# =====================================================================
+
+# --- Núcleo (cérebro, config, terminal) ---
+litellm>=1.50            # gateway único para OpenAI/Claude/Gemini/Ollama
+pydantic>=2.7
+pydantic-settings>=2.3
+python-dotenv>=1.0
+rich>=13.7               # terminal bonito (REPL do Jarvis)
+PyYAML>=6.0              # perfil de memória estruturada
+
+# --- Testes ---
+pytest>=8.0
+pytest-asyncio>=0.23
+
+# =====================================================================
+# VOZ — habilitar somente na fase de voz (podem exigir build no macOS).
+# =====================================================================
+# sounddevice>=0.4         # captura/reprodução de áudio
+# webrtcvad>=2.0           # detecção de voz/silêncio (VAD)
+# pvporcupine>=3.0         # hotword "Jarvis" (Picovoice)
+# faster-whisper>=1.0      # STT local (alternativa à API)
+# openai>=1.40             # STT/TTS/Realtime via OpenAI

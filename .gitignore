@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Ambiente virtual
+.venv/
+venv/
+env/
+
+# Segredos e configuração local
+.env
+.env.local
+
+# Banco de dados e dados locais do Jarvis
+app/storage/*.db
+app/storage/*.sqlite3
+app/storage/*.sqlite
+# Perfil de memória pessoal (gerado a partir do seed em memory.py)
+app/storage/profile.yaml
+
+# Áudio temporário
+*.wav
+*.mp3
+.tmp_audio/
+
+# Sistema operacional
+.DS_Store
+
+# Editores
+.vscode/
+.idea/
