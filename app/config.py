@@ -49,7 +49,13 @@ class Settings(BaseSettings):
     # Tamanho do modelo faster-whisper: tiny/base/small/medium/large-v3.
     # "small" é um bom equilíbrio de qualidade x velocidade em PT-BR.
     jarvis_stt_model: str = "small"
-    # Voz do macOS `say` para TTS (ex.: "Luciana" = PT-BR). Vazio = padrão.
+    # Motor de TTS: "openai" (natural, usa OPENAI_API_KEY) ou "say" (macOS, offline).
+    jarvis_tts_engine: str = "openai"
+    # Modelo OpenAI de TTS (tts-1 = rápido; tts-1-hd = maior qualidade).
+    jarvis_tts_model: str = "tts-1"
+    # Voz OpenAI: alloy/echo/fable/onyx/nova/shimmer (nova soa bem em PT-BR).
+    jarvis_openai_voice: str = "nova"
+    # Voz do macOS `say` (fallback): ex. "Luciana" (PT-BR). Vazio = padrão.
     jarvis_tts_voice: str = "Luciana"
 
     # --- Segurança ---

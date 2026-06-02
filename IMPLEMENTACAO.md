@@ -44,7 +44,7 @@ Pipeline modular fala→texto→cérebro→fala, validado de ponta a ponta
 |------------|---------|-----------|
 | Captura do microfone | `app/audio/recorder.py` | `sounddevice` 16 kHz + VAD por energia (silêncio) |
 | STT (fala → texto) | `app/audio/recorder.py` | `faster-whisper` local (modelo "small") |
-| TTS (texto → fala) | `app/audio/speaker.py` | comando `say` do macOS, voz "Luciana" (pt_BR) |
+| TTS (texto → fala) | `app/audio/speaker.py` | **OpenAI TTS** (voz "nova") por padrão; `say` do macOS como fallback |
 | Hotword | `app/audio/hotword.py` | **stub** — hoje é push-to-talk (Enter) |
 | Loop de voz | `app/main.py` (`modo_voz`) | push-to-talk → STT → orquestrador → TTS |
 
@@ -113,14 +113,15 @@ Registro das escolhas de arquitetura, com o que foi descartado e por quê.
 | Interface (voz) | **Terminal rico** | zero deps, voz já funcionando | barra de menu (rumps), janela GUI |
 | Ativação | **Push-to-talk** (Enter) | sem chave externa; destrava já | hotword Porcupine (precisa de chave) |
 | STT | **faster-whisper local** | grátis, offline, privado | OpenAI Whisper API (custo, envia áudio) |
-| TTS | **macOS `say`** (Luciana pt_BR) | grátis, sem deps, offline | OpenAI TTS, ElevenLabs, Piper |
+| TTS | **OpenAI TTS** (voz "nova") | voz natural; `say` era robótico (feedback do Wilson) | macOS `say` (fallback offline), ElevenLabs, Piper |
 | Detecção de fala | **energia/RMS** | menos dependências | webrtcvad (mais robusto) |
 | Modelo STT padrão | **small** | bom equilíbrio qualidade×velocidade PT | tiny/base (pior), medium/large (pesado) |
 | Memória | SQLite + perfil no prompt | simples, sem infra | banco vetorial (fase futura) |
 
 ### Estado da validação (o que foi testado de fato)
 - ✅ STT validado: transcrevi o áudio gerado pelo TTS e recuperei o texto.
-- ✅ TTS validado: `say` renderiza áudio em pt_BR (voz Luciana).
+- ✅ TTS validado: OpenAI TTS (voz "nova") gera e toca áudio natural; `say`
+  segue como fallback offline. (Troca feita após o Wilson achar o `say` ruim.)
 - ✅ LLM + ferramentas + guard de risco + auditoria: testados com API real.
 - ⚠️ **Não testado aqui**: captura do microfone ao vivo (ambiente sem mic).
   É o único ponto a confirmar no Mac do Wilson.
