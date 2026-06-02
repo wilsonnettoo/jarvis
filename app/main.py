@@ -15,6 +15,7 @@ from rich.console import Console
 from rich.panel import Panel
 
 # Importar os módulos de ferramentas REGISTRA as ferramentas no catálogo.
+import app.tools.file_tools  # noqa: F401
 import app.tools.system_tools  # noqa: F401
 from app.agent.orchestrator import Orchestrator
 from app.config import settings
