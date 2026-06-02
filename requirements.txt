@@ -33,6 +33,13 @@ torchaudio>=2.9            # IO de áudio do XTTS
 transformers>=4.40,<5      # IMPORTANTE: XTTS quebra com transformers 5.x
 elevenlabs>=1.0            # clonagem de voz na nuvem (alternativa paga)
 # Requer o binário `ffmpeg` no sistema (brew install ffmpeg) para o torchcodec.
+#
+# macOS — evitar aviso "Class AVF... implemented in both" (ffmpeg duplicado):
+# o PyAV (dep do faster-whisper) traz ffmpeg próprio que conflita com o do
+# Homebrew usado pelo torchcodec. Recompile o PyAV contra o ffmpeg do sistema:
+#   brew install pkg-config ffmpeg
+#   PKG_CONFIG_PATH=/opt/homebrew/lib/pkgconfig \
+#     pip install --no-binary av av --force-reinstall --no-deps
 
 # --- Interface (barra de menu macOS, experimental) ---
 rumps>=0.4                 # ícone de estado na barra de menu (app.ui.tray)

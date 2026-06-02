@@ -184,6 +184,11 @@ Registro das escolhas de arquitetura, com o que foi descartado e por quê.
 - **transformers fixado em <5**: o XTTS quebra com transformers 5.x
   (`isin_mps_friendly`). Não atualizar transformers sem testar o XTTS.
 - **torchcodec exige o binário `ffmpeg`** instalado (brew install ffmpeg).
+- **Aviso "Class AVF... implemented in both" (macOS) — RESOLVIDO**: era o
+  PyAV (do faster-whisper) trazendo um ffmpeg próprio que conflitava com o do
+  Homebrew (usado pelo torchcodec). Corrigido recompilando o PyAV contra o
+  ffmpeg do sistema (`pip install --no-binary av av --force-reinstall
+  --no-deps`, com `pkg-config`). Era cosmético, mas agora some.
 - ⚖️ **Direitos da voz**: a amostra atual é a voz do JARVIS do filme Homem de
   Ferro (Paul Bettany) — uso **pessoal** é ok, mas **evite uso comercial**
   (ex.: atendimento/propagandas da MV Travel) por questão de direitos. Para
