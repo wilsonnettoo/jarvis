@@ -42,8 +42,15 @@ class Settings(BaseSettings):
     # String de conexão PostgreSQL, ex.: postgresql://user:senha@host:5432/db
     database_url: str | None = None
 
-    # --- Voz (fases finais) ---
+    # --- Voz ---
     picovoice_access_key: str | None = None
+    # Idioma usado para STT/TTS.
+    jarvis_language: str = "pt"
+    # Tamanho do modelo faster-whisper: tiny/base/small/medium/large-v3.
+    # "small" é um bom equilíbrio de qualidade x velocidade em PT-BR.
+    jarvis_stt_model: str = "small"
+    # Voz do macOS `say` para TTS (ex.: "Luciana" = PT-BR). Vazio = padrão.
+    jarvis_tts_voice: str = "Luciana"
 
     # --- Segurança ---
     # Quando True, ações de risco MÉDIO/ALTO sempre pedem confirmação.

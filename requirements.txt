@@ -19,11 +19,15 @@ pytest-asyncio>=0.23
 # --- Banco de dados (opcional; só se for usar consultar_postgres) ---
 # psycopg[binary]>=3.1
 
+# --- Voz (modo --voz) ---
+sounddevice>=0.4           # captura de áudio do microfone
+faster-whisper>=1.0        # STT local (fala -> texto), grátis e offline
+numpy>=1.26                # manipulação do buffer de áudio
+# TTS usa o comando `say` do macOS (nativo, sem dependência Python).
+
 # =====================================================================
-# VOZ — habilitar somente na fase de voz (podem exigir build no macOS).
+# VOZ — fase futura (hotword), exige chave Picovoice.
 # =====================================================================
-# sounddevice>=0.4         # captura/reprodução de áudio
-# webrtcvad>=2.0           # detecção de voz/silêncio (VAD)
 # pvporcupine>=3.0         # hotword "Jarvis" (Picovoice)
-# faster-whisper>=1.0      # STT local (alternativa à API)
-# openai>=1.40             # STT/TTS/Realtime via OpenAI
+# webrtcvad>=2.0           # VAD mais robusto (hoje usamos energia/RMS)
+# openai>=1.40             # alternativa: STT/TTS/Realtime via OpenAI

@@ -10,8 +10,8 @@ cada avanço. Para a visão geral do projeto, ver [README.md](README.md).
 ## ✅ Concluído
 
 ### Etapa 0 — Fundação (núcleo)
-Núcleo agnóstico de provedor e de voz, testável por texto. Tudo isto roda
-sem áudio e foi validado com chamadas reais de API.
+Núcleo agnóstico de provedor e de voz, testável por texto. Validado com
+chamadas reais de API.
 
 | Componente | Arquivo | O que faz |
 |------------|---------|-----------|
@@ -22,7 +22,7 @@ sem áudio e foi validado com chamadas reais de API.
 | Memória | `app/agent/memory.py` | SQLite (histórico + auditoria) + perfil estruturado no prompt |
 | Persona | `app/agent/prompts.py` | System prompt do Jarvis em PT-BR |
 | Orquestrador | `app/agent/orchestrator.py` | Loop async; toda tool passa pelo guard |
-| Entrada | `app/main.py` | REPL de terminal (`python -m app.main`) |
+| Entrada | `app/main.py` | `python -m app.main` (texto) e `--voz` (voz) |
 
 ### Ferramentas (15 no total)
 
@@ -36,6 +36,20 @@ sem áudio e foi validado com chamadas reais de API.
 - BAIXO: `git_status`, `git_log`, `branch_atual`
 - MÉDIO: `criar_branch`, `criar_commit`, `consultar_postgres` (SELECT-only)
 
+### Voz — MVP (modo `--voz`)
+Pipeline modular fala→texto→cérebro→fala, validado de ponta a ponta
+(exceto captura do microfone, que precisa de hardware).
+
+| Componente | Arquivo | Tecnologia |
+|------------|---------|-----------|
+| Captura do microfone | `app/audio/recorder.py` | `sounddevice` 16 kHz + VAD por energia (silêncio) |
+| STT (fala → texto) | `app/audio/recorder.py` | `faster-whisper` local (modelo "small") |
+| TTS (texto → fala) | `app/audio/speaker.py` | comando `say` do macOS, voz "Luciana" (pt_BR) |
+| Hotword | `app/audio/hotword.py` | **stub** — hoje é push-to-talk (Enter) |
+| Loop de voz | `app/main.py` (`modo_voz`) | push-to-talk → STT → orquestrador → TTS |
+
+Estados exibidos no terminal: 🎤 ouvindo · 🧠 pensando · 🔊 falando.
+
 ### Segurança (pilar nº 2)
 - Níveis BAIXO / MÉDIO / ALTO / PROIBIDO (`RiskLevel`).
 - ALTO sempre confirma; MÉDIO confirma se `JARVIS_REQUIRE_CONFIRMATION=true`.
@@ -43,53 +57,81 @@ sem áudio e foi validado com chamadas reais de API.
 - `consultar_postgres` recusa qualquer comando de escrita.
 
 ### Testes
-- 17 testes passando (`pytest`): segurança, registry, file tools, git, postgres.
-
-### Decisões de arquitetura (ADR)
-- Multi-LLM via **LiteLLM** (troca por `JARVIS_MODEL` no `.env`).
-- Voz será **pipeline modular** (STT→LLM→TTS) — funciona com qualquer
-  provedor; Realtime (OpenAI) fica como modo turbo opcional.
-- Núcleo **async-first** para suportar interrupção (barge-in) na voz.
-- Memória sem vetores no MVP (perfil injetado no prompt).
+- 20 testes passando (`pytest`): segurança, registry, file tools, git,
+  postgres, áudio (TTS render + STT vazio).
 
 ---
 
-## 🚧 Em andamento / Próximo
+## 🚧 Próximo
 
-### Voz (PRIORIDADE ATUAL — fase escolhida pelo Wilson)
-Objetivo: Jarvis acorda por palavra-chave, ouve, pensa e responde falando.
-
-- [ ] Captura de áudio do microfone (`audio/recorder.py`)
-- [ ] STT — fala → texto (Whisper API ou `faster-whisper` local)
-- [ ] TTS — texto → fala (OpenAI TTS ou alternativa)
-- [ ] Hotword "Jarvis" (`audio/hotword.py`, Picovoice Porcupine)
-- [ ] Loop de voz integrado ao orquestrador existente
-- [ ] Confirmações faladas para ações de risco MÉDIO/ALTO
+### Voz — completar
+- [ ] **Testar captura do microfone ao vivo** (só funciona no Mac do Wilson;
+      pode exigir permissão de Microfone no macOS na 1ª vez).
+- [ ] Hotword "Jarvis" (Picovoice) — precisa de `PICOVOICE_ACCESS_KEY`.
+- [ ] Confirmações **faladas** para risco MÉDIO/ALTO (hoje a confirmação no
+      modo voz ainda é digitada no terminal).
+- [ ] Interrupção (barge-in) — falar por cima da resposta.
 
 ### Interface visual
-- [ ] Decidir formato: ícone na barra de menu (tray) vs janela GUI vs TUI rica
-- [ ] Indicador de estado (ouvindo / pensando / falando)
+- [ ] Evoluir do terminal para **barra de menu (macOS, rumps)** com ícone
+      de estado, depois opcionalmente janela GUI.
 
 ---
 
 ## 📋 Backlog (fases futuras)
 
 - [ ] **Ferramentas MV Travel**: roteiros, propostas, posts, checklists
-- [ ] **Navegador** (`browser_tools.py`): Playwright, coleta de dados, formulários
+- [ ] **Navegador** (`browser_tools.py`): Playwright, coleta, formulários
 - [ ] **Produtividade**: calendário, e-mail, lembretes, gerar PDF
-- [ ] **Git destrutivo / DB escrita**: ferramentas de risco ALTO com confirmação
+- [ ] **Git destrutivo / DB escrita**: ferramentas de risco ALTO
 - [ ] **Memória avançada**: banco vetorial para busca semântica
 - [ ] **Modo Realtime** (OpenAI) para voz de baixa latência
-- [ ] **Push para o GitHub** (atualmente N commits à frente do `origin`)
+- [ ] **Push para o GitHub** (atualmente vários commits à frente do `origin`)
 
 ---
 
 ## ⚠️ Pendências de decisão (dependem do Wilson)
 
-1. **Reset de tokens**: não consigo detectar sozinho nem saber o horário do
-   reset — quando o Claude Code avisar, passar o horário para agendar a retomada.
+1. **Reset de tokens**: não detecto sozinho nem sei o horário do reset —
+   quando o Claude Code avisar, passar o horário para agendar a retomada.
 2. **Push para o GitHub**: precisa de autorização (ação externa).
-3. **Provedores de STT/TTS**: definir API (OpenAI) vs local (Whisper/Piper).
+3. **Chave Picovoice**: criar grátis em console.picovoice.ai para liberar a
+   hotword "Jarvis".
+
+---
+
+## 🧭 Review — decisões tomadas (e alternativas)
+
+Registro das escolhas de arquitetura, com o que foi descartado e por quê.
+(Wilson pediu que eu decida e deixe anotado; nenhuma destas exigiu pergunta.)
+
+| Tema | Escolhido | Por quê | Outras opções consideradas |
+|------|-----------|---------|----------------------------|
+| Provedor de LLM | **LiteLLM** (gateway único) | troca por config, suporta os 4 | SDKs próprios por provedor |
+| Estratégia de voz | **Pipeline modular** (STT→LLM→TTS) | funciona com qualquer LLM | Realtime OpenAI (só OpenAI) |
+| Ordem de build | fundação texto → voz | validar barato antes do áudio | voz primeiro (mais fricção) |
+| Interface (voz) | **Terminal rico** | zero deps, voz já funcionando | barra de menu (rumps), janela GUI |
+| Ativação | **Push-to-talk** (Enter) | sem chave externa; destrava já | hotword Porcupine (precisa de chave) |
+| STT | **faster-whisper local** | grátis, offline, privado | OpenAI Whisper API (custo, envia áudio) |
+| TTS | **macOS `say`** (Luciana pt_BR) | grátis, sem deps, offline | OpenAI TTS, ElevenLabs, Piper |
+| Detecção de fala | **energia/RMS** | menos dependências | webrtcvad (mais robusto) |
+| Modelo STT padrão | **small** | bom equilíbrio qualidade×velocidade PT | tiny/base (pior), medium/large (pesado) |
+| Memória | SQLite + perfil no prompt | simples, sem infra | banco vetorial (fase futura) |
+
+### Estado da validação (o que foi testado de fato)
+- ✅ STT validado: transcrevi o áudio gerado pelo TTS e recuperei o texto.
+- ✅ TTS validado: `say` renderiza áudio em pt_BR (voz Luciana).
+- ✅ LLM + ferramentas + guard de risco + auditoria: testados com API real.
+- ⚠️ **Não testado aqui**: captura do microfone ao vivo (ambiente sem mic).
+  É o único ponto a confirmar no Mac do Wilson.
+
+### Riscos/limitações conhecidos
+- Python 3.14 é novo; as libs de voz têm wheel e funcionam, mas fique atento
+  a incompatibilidades em libs futuras.
+- VAD por energia pode cortar cedo em ambiente barulhento — ajustar `limiar`
+  e `silencio_seg` em `recorder.py` se necessário.
+- Latência do modo voz: STT local "small" em CPU tem alguns segundos de
+  atraso; cair para "base" acelera, ou usar Realtime/API no futuro.
 
 ---
 
@@ -98,7 +140,9 @@ Objetivo: Jarvis acorda por palavra-chave, ouve, pensa e responde falando.
 ```bash
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
-cp .env.example .env          # preencher uma chave de LLM (ex.: OPENAI_API_KEY)
-.venv/bin/python -m app.main  # REPL de texto
-.venv/bin/python -m pytest    # testes
+cp .env.example .env             # preencher OPENAI_API_KEY (ou outro provedor)
+
+.venv/bin/python -m app.main         # chat por texto
+.venv/bin/python -m app.main --voz   # conversa por voz (Enter para falar)
+.venv/bin/python -m pytest           # testes
 ```
