@@ -152,7 +152,7 @@ Registro das escolhas de arquitetura, com o que foi descartado e por quê.
 | STT | **faster-whisper local** | grátis, offline, privado | OpenAI Whisper API (custo, envia áudio) |
 | TTS | **multi-motor** (xtts/elevenlabs/openai/say) | permite voz clonada do Wilson; OpenAI/say como fallback | um motor só fixo |
 | Voz clonada | **XTTS-v2 local** + ElevenLabs (instalados) | grátis/offline; ElevenLabs p/ clonagem de qualidade | só OpenAI (não clona) |
-| TTS padrão (atual) | **OpenAI `gpt-4o-mini-tts`**, voz onyx + estilo "mordomo" | XTTS ficou robótico (amostra de filme com trilha) e lento no Mac → voltamos pra OpenAI: natural, rápido e com "vibe" de JARVIS | manter XTTS local |
+| TTS padrão (atual) | **ElevenLabs** — voz clonada do Tony Stark (IVC) | clonagem de qualidade + baixa latência; XTTS local ficou robótico/lento | OpenAI gpt-4o-mini-tts (fallback rápido sem clonar), XTTS local |
 | Hotword | **openWakeWord** ("hey_jarvis") | grátis, sem chave, offline | Picovoice Porcupine (precisa de chave) — ver comparação acima |
 | Confirmação (voz) | **falada** (`VoiceConfirmer`) | mãos-livres real; segurança mantida | manter confirmação digitada |
 | Interface | **terminal + bandeja rumps** (experimental) | bandeja dá cara de assistente; CLI continua estável | só terminal; janela GUI completa |
@@ -194,6 +194,12 @@ Registro das escolhas de arquitetura, com o que foi descartado e por quê.
   Ferro (Paul Bettany) — uso **pessoal** é ok, mas **evite uso comercial**
   (ex.: atendimento/propagandas da MV Travel) por questão de direitos. Para
   uso comercial, gravar/usar uma voz própria (`record_sample.py`).
+- 🔐 **Chave ElevenLabs foi colada no chat** → recomendado **regenerar** a
+  chave (Profile → API Keys) por segurança. Hoje fica só no `.env` (gitignored).
+- 🎙️ **Voz atual = ElevenLabs (clone do Tony Stark)**, engine `elevenlabs`,
+  voice_id em `.env`. Clonada de `Tony Stark voice.mp3` (amostra de 18s).
+  IVC exige plano pago (o do Wilson já permite). Trocar de voz: rodar
+  `clone_elevenlabs.py` com outra amostra e atualizar `ELEVENLABS_VOICE_ID`.
 - 🔊 **XTTS local soou robótico + lento**: (1) a amostra é um clipe de filme
   com trilha/efeitos (XTTS clona bem só com voz LIMPA e seca); (2) XTTS em
   CPU/Mac tem latência alta. Decisão: TTS padrão voltou para OpenAI
