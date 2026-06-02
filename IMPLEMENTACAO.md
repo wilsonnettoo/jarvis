@@ -2,6 +2,8 @@
 
 Documento vivo do que já foi construído e do que ainda falta. Atualizado a
 cada avanço. Para a visão geral do projeto, ver [README.md](README.md).
+Visão futura de arquitetura multiagente: ver
+[jarvis_agentic_core.md](jarvis_agentic_core.md).
 
 > Última atualização: 2026-06-02
 
@@ -53,6 +55,7 @@ Pipeline modular fala→texto→cérebro→fala, validado de ponta a ponta
 
 Estados exibidos no terminal: 🎤 ouvindo · 🧠 pensando · 🔊 falando.
 Ativação: por padrão escuta **"Hey Jarvis"**; use `--ptt` para push-to-talk (Enter).
+Encerrar: diga ou digite **"vai dormir"** (o Jarvis responde "Boa noite, senhor.").
 
 ### Segurança (pilar nº 2)
 - Níveis BAIXO / MÉDIO / ALTO / PROIBIDO (`RiskLevel`).
@@ -88,7 +91,11 @@ Ativação: por padrão escuta **"Hey Jarvis"**; use `--ptt` para push-to-talk (
 ## 📋 Backlog (fases futuras)
 
 - [ ] **Ferramentas MV Travel**: roteiros, propostas, posts, checklists
-- [ ] **Navegador** (`browser_tools.py`): Playwright, coleta, formulários
+- [ ] **Parte WEB / Navegador** (`browser_tools.py`) — **0% feito** (arquivo
+      vazio; Playwright nem instalado). Hoje só existe `abrir_site(url)`.
+      Planejado: `pesquisar_web` (BAIXO), `ler_pagina` (BAIXO),
+      `coletar_dados_site`/scraping (MÉDIO), `preencher_formulario` (ALTO).
+      Útil depois para a MV Travel (preços, destinos, fornecedores).
 - [ ] **Produtividade**: calendário, e-mail, lembretes, gerar PDF
 - [ ] **Git destrutivo / DB escrita**: ferramentas de risco ALTO
 - [ ] **Memória avançada**: banco vetorial para busca semântica
