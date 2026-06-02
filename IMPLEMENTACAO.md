@@ -101,9 +101,9 @@ Ativação: por padrão escuta **"Hey Jarvis"**; use `--ptt` para push-to-talk (
 1. **Reset de tokens**: não detecto sozinho nem sei o horário do reset —
    quando o Claude Code avisar, passar o horário para agendar a retomada.
 2. **Push para o GitHub**: precisa de autorização (ação externa).
-3. **Chave Picovoice — NÃO é mais necessária.** A hotword já funciona de
-   graça com openWakeWord (ver comparação abaixo). A chave do Picovoice só
-   faz falta se, depois de testar, você quiser trocar para o Porcupine.
+3. **Picovoice — NÃO USAR.** A hotword já funciona de graça com openWakeWord.
+   O Picovoice é pago no uso comercial e exige domínio corporativo no
+   cadastro — por isso foi descartado. Mantido aqui só como nota histórica.
 
 ---
 
@@ -112,29 +112,27 @@ Ativação: por padrão escuta **"Hey Jarvis"**; use `--ptt` para push-to-talk (
 > Wilson pediu: "deixe claro que precisa criar a chave do Picovoice e me
 > avise se houver alternativa tão boa ou melhor."
 
-**Resultado: encontrei uma alternativa e já a implementei — você NÃO precisa
-criar chave nenhuma.** Detalhe da comparação:
+**Resultado: o Picovoice foi DESCARTADO (pago no comercial + exige domínio
+corporativo no cadastro). A hotword usa openWakeWord — grátis e sem conta.**
 
-| Critério | **openWakeWord** (escolhido) | Picovoice Porcupine |
+| Critério | **openWakeWord** (em uso) | Picovoice Porcupine (descartado) |
 |----------|------------------------------|---------------------|
-| Chave de API | **Não precisa** | **Precisa** (`PICOVOICE_ACCESS_KEY`, grátis em console.picovoice.ai) |
-| Custo | Grátis, open-source | Grátis no tier pessoal; pago no comercial |
+| Conta / chave | **Não precisa** | Precisa (e exige domínio corporativo) |
+| Custo | **Grátis** (Apache-2.0) | Pago no uso comercial |
 | Offline | Sim | Sim |
-| "Hey Jarvis" pronto | Sim (modelo pré-treinado) | Sim (keyword embutida "jarvis") |
-| Precisão | Muito boa | Excelente (referência do mercado) |
-| Latência/CPU | Leve (ONNX) | Muito leve (otimizado) |
-| Licença comercial | Permissiva (Apache-2.0) | Restrições no plano free |
+| "Hey Jarvis" pronto | Sim (modelo pré-treinado) | Sim |
+| Precisão | Muito boa | Excelente (um pouco melhor) |
 
-**Recomendação:** ficar com o **openWakeWord** — atende muito bem, é grátis e
-sem fricção. O Porcupine é um pouco mais preciso/leve e seria a troca natural
-**se** você notar falsos positivos/negativos na prática. Nesse caso:
-1. Criar a chave grátis em https://console.picovoice.ai
-2. Pôr em `PICOVOICE_ACCESS_KEY` no `.env`
-3. Me avisar que eu troco o backend da hotword (a interface já está isolada).
+Se um dia o openWakeWord não satisfizer, estas são as **alternativas grátis**
+(todas sem conta/sem custo) para eu avaliar — nenhuma exige Picovoice:
 
-Outras alternativas avaliadas e descartadas: **Snowboy** (descontinuado),
-**Mycroft Precise** (abandonado), detectar "jarvis" via Whisper contínuo
-(pesado demais para ficar sempre ligado).
+- **Treinar um modelo "Hey Jarvis" customizado no próprio openWakeWord**
+  (melhora muito a precisão para a sua voz; grátis).
+- **Vosk** — keyword spotting offline, open-source.
+- **Detecção via Whisper** já presente (escuta curta + checa se a transcrição
+  contém "jarvis"); funciona, porém gasta mais CPU se ficar sempre ligado.
+
+Descartados também: **Snowboy** e **Mycroft Precise** (projetos abandonados).
 
 ---
 
