@@ -85,11 +85,15 @@ class Speaker:
         """Gera áudio com OpenAI TTS (via LiteLLM) e toca com afplay."""
         import litellm
 
-        resposta = litellm.speech(
-            model=settings.jarvis_tts_model,
-            voice=settings.jarvis_openai_voice,
-            input=texto,
-        )
+        kwargs = {
+            "model": settings.jarvis_tts_model,
+            "voice": settings.jarvis_openai_voice,
+            "input": texto,
+        }
+        # "instructions" (estilo) só existe nos modelos gpt-4o-*-tts.
+        if settings.jarvis_tts_model.startswith("gpt-4o") and settings.jarvis_tts_instructions:
+            kwargs["instructions"] = settings.jarvis_tts_instructions
+        resposta = litellm.speech(**kwargs)
         destino = Path(tempfile.gettempdir()) / "jarvis_tts.mp3"
         resposta.stream_to_file(str(destino))
         player = self._afplay or shutil.which("afplay")

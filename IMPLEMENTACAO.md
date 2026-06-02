@@ -151,7 +151,8 @@ Registro das escolhas de arquitetura, com o que foi descartado e por quê.
 | Ativação | **Push-to-talk** (Enter) | sem chave externa; destrava já | hotword Porcupine (precisa de chave) |
 | STT | **faster-whisper local** | grátis, offline, privado | OpenAI Whisper API (custo, envia áudio) |
 | TTS | **multi-motor** (xtts/elevenlabs/openai/say) | permite voz clonada do Wilson; OpenAI/say como fallback | um motor só fixo |
-| Voz clonada | **XTTS-v2 local** (em uso) + ElevenLabs (instalado) | grátis/offline para começar; ElevenLabs se quiser top de qualidade | só OpenAI (não clona) |
+| Voz clonada | **XTTS-v2 local** + ElevenLabs (instalados) | grátis/offline; ElevenLabs p/ clonagem de qualidade | só OpenAI (não clona) |
+| TTS padrão (atual) | **OpenAI `gpt-4o-mini-tts`**, voz onyx + estilo "mordomo" | XTTS ficou robótico (amostra de filme com trilha) e lento no Mac → voltamos pra OpenAI: natural, rápido e com "vibe" de JARVIS | manter XTTS local |
 | Hotword | **openWakeWord** ("hey_jarvis") | grátis, sem chave, offline | Picovoice Porcupine (precisa de chave) — ver comparação acima |
 | Confirmação (voz) | **falada** (`VoiceConfirmer`) | mãos-livres real; segurança mantida | manter confirmação digitada |
 | Interface | **terminal + bandeja rumps** (experimental) | bandeja dá cara de assistente; CLI continua estável | só terminal; janela GUI completa |
@@ -193,6 +194,13 @@ Registro das escolhas de arquitetura, com o que foi descartado e por quê.
   Ferro (Paul Bettany) — uso **pessoal** é ok, mas **evite uso comercial**
   (ex.: atendimento/propagandas da MV Travel) por questão de direitos. Para
   uso comercial, gravar/usar uma voz própria (`record_sample.py`).
+- 🔊 **XTTS local soou robótico + lento**: (1) a amostra é um clipe de filme
+  com trilha/efeitos (XTTS clona bem só com voz LIMPA e seca); (2) XTTS em
+  CPU/Mac tem latência alta. Decisão: TTS padrão voltou para OpenAI
+  (`gpt-4o-mini-tts`, voz onyx, estilo mordomo) — natural e rápido. Para a
+  voz CLONADA do JARVIS com qualidade, o caminho é **ElevenLabs** (precisa de
+  chave; clonagem instantânea exige plano ~US$5/mês). XTTS segue disponível
+  (`JARVIS_TTS_ENGINE=xtts`) caso queira tentar com uma amostra limpa.
 
 ---
 
