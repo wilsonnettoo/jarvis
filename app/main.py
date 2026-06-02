@@ -59,32 +59,45 @@ async def modo_texto() -> None:
         console.print(f"[bold cyan]jarvis[/bold cyan] › {resposta}")
 
 
-async def modo_voz() -> None:
-    """Conversa por voz: push-to-talk -> STT -> LLM -> TTS."""
+async def modo_voz(forcar_ptt: bool = False) -> None:
+    """Conversa por voz: (hotword|push-to-talk) -> STT -> LLM -> TTS."""
     # Imports de áudio aqui dentro: só carregam quando o modo voz é usado.
+    from app.audio.hotword import HotwordListener
     from app.audio.recorder import Transcriber, gravar_ate_silencio
     from app.audio.speaker import Speaker
+    from app.security.confirmations import VoiceConfirmer
+
+    usar_hotword = HotwordListener.disponivel() and not forcar_ptt
+    ativacao = "diga 'Hey Jarvis'" if usar_hotword else "Enter para falar"
 
     console.print(
         Panel.fit(
             "[bold cyan]Jarvis[/bold cyan] — assistente pessoal (voz)\n"
             f"Modelo: [yellow]{settings.jarvis_model}[/yellow] | "
             f"STT: [yellow]{settings.jarvis_stt_model}[/yellow] | "
-            f"voz: [yellow]{settings.jarvis_tts_voice}[/yellow]\n"
-            "[bold]Enter[/bold] para falar · diga/[bold]sair[/bold] para encerrar.",
+            f"voz: [yellow]{settings.jarvis_openai_voice}[/yellow]\n"
+            f"Ativação: [bold]{ativacao}[/bold] · diga [bold]sair[/bold] para encerrar.",
             border_style="cyan",
         )
     )
 
-    orchestrator = Orchestrator()
     speaker = Speaker()
-
-    with console.status("[cyan]Carregando modelo de voz...[/cyan]"):
+    with console.status("[cyan]Carregando modelos de voz...[/cyan]"):
         transcriber = Transcriber()
+        listener = HotwordListener() if usar_hotword else None
+
+    # Confirmações de ações sensíveis acontecem por voz neste modo.
+    confirmer = VoiceConfirmer(speaker, transcriber)
+    orchestrator = Orchestrator(confirmer=confirmer)
 
     while True:
         try:
-            console.input("\n[dim](Enter para falar)[/dim] ")
+            if usar_hotword:
+                console.print("\n[dim](aguardando 'Hey Jarvis'...)[/dim]")
+                await asyncio.to_thread(listener.aguardar)
+                speaker.beep()
+            else:
+                console.input("\n[dim](Enter para falar)[/dim] ")
         except (EOFError, KeyboardInterrupt):
             console.print("\n[dim]Até logo, Wilson.[/dim]")
             break
@@ -118,8 +131,13 @@ def main() -> None:
     parser.add_argument(
         "--voz", action="store_true", help="inicia no modo de conversa por voz"
     )
+    parser.add_argument(
+        "--ptt",
+        action="store_true",
+        help="no modo voz, força push-to-talk (ignora a hotword)",
+    )
     args = parser.parse_args()
-    asyncio.run(modo_voz() if args.voz else modo_texto())
+    asyncio.run(modo_voz(forcar_ptt=args.ptt) if args.voz else modo_texto())
 
 
 if __name__ == "__main__":

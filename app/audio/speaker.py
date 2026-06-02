@@ -47,6 +47,13 @@ class Speaker:
                 pass
         self._falar_macos(texto)
 
+    def beep(self) -> None:
+        """Toca um som curto do sistema (reconhecimento da hotword)."""
+        som = "/System/Library/Sounds/Tink.aiff"
+        player = self._afplay or shutil.which("afplay")
+        if player and Path(som).exists():
+            subprocess.run([player, som])
+
     def render_to_file(self, texto: str, caminho: str) -> bool:
         """Renderiza a fala para arquivo (usado em testes; usa o `say`)."""
         if not self._say:

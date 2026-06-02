@@ -23,11 +23,15 @@ pytest-asyncio>=0.23
 sounddevice>=0.4           # captura de áudio do microfone
 faster-whisper>=1.0        # STT local (fala -> texto), grátis e offline
 numpy>=1.26                # manipulação do buffer de áudio
-# TTS usa o comando `say` do macOS (nativo, sem dependência Python).
+openwakeword>=0.6          # hotword "Hey Jarvis" local e grátis (SEM chave)
+# TTS padrão usa OpenAI (litellm.speech); `say` do macOS é o fallback.
+
+# --- Interface (barra de menu macOS, experimental) ---
+rumps>=0.4                 # ícone de estado na barra de menu (app.ui.tray)
 
 # =====================================================================
-# VOZ — fase futura (hotword), exige chave Picovoice.
+# VOZ — alternativas opcionais (não necessárias):
 # =====================================================================
-# pvporcupine>=3.0         # hotword "Jarvis" (Picovoice)
+# pvporcupine>=3.0         # hotword via Picovoice (EXIGE PICOVOICE_ACCESS_KEY)
 # webrtcvad>=2.0           # VAD mais robusto (hoje usamos energia/RMS)
-# openai>=1.40             # alternativa: STT/TTS/Realtime via OpenAI
+# openai>=1.40             # STT/TTS/Realtime direto pelo SDK da OpenAI

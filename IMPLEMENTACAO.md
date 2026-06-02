@@ -3,7 +3,7 @@
 Documento vivo do que já foi construído e do que ainda falta. Atualizado a
 cada avanço. Para a visão geral do projeto, ver [README.md](README.md).
 
-> Última atualização: 2026-06-01
+> Última atualização: 2026-06-02
 
 ---
 
@@ -45,10 +45,13 @@ Pipeline modular fala→texto→cérebro→fala, validado de ponta a ponta
 | Captura do microfone | `app/audio/recorder.py` | `sounddevice` 16 kHz + VAD por energia **auto-calibrada** (mede ruído de fundo) |
 | STT (fala → texto) | `app/audio/recorder.py` | `faster-whisper` local (modelo "small") |
 | TTS (texto → fala) | `app/audio/speaker.py` | **OpenAI TTS** (voz "nova") por padrão; `say` do macOS como fallback |
-| Hotword | `app/audio/hotword.py` | **stub** — hoje é push-to-talk (Enter) |
-| Loop de voz | `app/main.py` (`modo_voz`) | push-to-talk → STT → orquestrador → TTS |
+| Hotword "Hey Jarvis" | `app/audio/hotword.py` | **openWakeWord** (grátis, offline, SEM chave) — modelo `hey_jarvis` |
+| Confirmação falada | `app/security/confirmations.py` | `VoiceConfirmer`: fala a pergunta e ouve sim/não para ações de risco |
+| Loop de voz | `app/main.py` (`modo_voz`) | hotword (ou `--ptt` push-to-talk) → STT → orquestrador → TTS |
+| Bandeja (barra de menu) | `app/ui/tray.py` | **experimental**: ícone de estado + "Falar" (rumps); precisa de teste ao vivo |
 
 Estados exibidos no terminal: 🎤 ouvindo · 🧠 pensando · 🔊 falando.
+Ativação: por padrão escuta **"Hey Jarvis"**; use `--ptt` para push-to-talk (Enter).
 
 ### Segurança (pilar nº 2)
 - Níveis BAIXO / MÉDIO / ALTO / PROIBIDO (`RiskLevel`).
@@ -67,14 +70,17 @@ Estados exibidos no terminal: 🎤 ouvindo · 🧠 pensando · 🔊 falando.
 ### Voz — completar
 - [x] **Captura do microfone ao vivo validada** no Mac do Wilson (transcreveu
       frase falada corretamente; VAD auto-calibrada para o ganho do mic JBL).
-- [ ] Hotword "Jarvis" (Picovoice) — precisa de `PICOVOICE_ACCESS_KEY`.
-- [ ] Confirmações **faladas** para risco MÉDIO/ALTO (hoje a confirmação no
-      modo voz ainda é digitada no terminal).
-- [ ] Interrupção (barge-in) — falar por cima da resposta.
+- [x] **Hotword "Hey Jarvis"** implementada com openWakeWord (grátis, sem chave).
+      → falta só **testar ao vivo** (dizer "Hey Jarvis" e ver se aciona).
+- [x] **Confirmação falada** para risco MÉDIO/ALTO (`VoiceConfirmer`).
+      → falta **testar ao vivo** o fluxo completo de uma ação MÉDIO por voz.
+- [ ] Interrupção (barge-in) — falar por cima da resposta (fase futura).
 
 ### Interface visual
-- [ ] Evoluir do terminal para **barra de menu (macOS, rumps)** com ícone
-      de estado, depois opcionalmente janela GUI.
+- [x] Bandeja de barra de menu (`app/ui/tray.py`, rumps) **implementada**.
+      → **experimental: precisa de teste ao vivo** numa sessão gráfica
+      (`python -m app.ui.tray`). Hotword contínua na bandeja é passo futuro.
+- [ ] Evoluir a bandeja (menu de histórico, toggle de hotword) ou janela GUI.
 
 ---
 
@@ -95,8 +101,40 @@ Estados exibidos no terminal: 🎤 ouvindo · 🧠 pensando · 🔊 falando.
 1. **Reset de tokens**: não detecto sozinho nem sei o horário do reset —
    quando o Claude Code avisar, passar o horário para agendar a retomada.
 2. **Push para o GitHub**: precisa de autorização (ação externa).
-3. **Chave Picovoice**: criar grátis em console.picovoice.ai para liberar a
-   hotword "Jarvis".
+3. **Chave Picovoice — NÃO é mais necessária.** A hotword já funciona de
+   graça com openWakeWord (ver comparação abaixo). A chave do Picovoice só
+   faz falta se, depois de testar, você quiser trocar para o Porcupine.
+
+---
+
+## 🔑 Hotword: Picovoice vs. openWakeWord (resposta à pergunta do Wilson)
+
+> Wilson pediu: "deixe claro que precisa criar a chave do Picovoice e me
+> avise se houver alternativa tão boa ou melhor."
+
+**Resultado: encontrei uma alternativa e já a implementei — você NÃO precisa
+criar chave nenhuma.** Detalhe da comparação:
+
+| Critério | **openWakeWord** (escolhido) | Picovoice Porcupine |
+|----------|------------------------------|---------------------|
+| Chave de API | **Não precisa** | **Precisa** (`PICOVOICE_ACCESS_KEY`, grátis em console.picovoice.ai) |
+| Custo | Grátis, open-source | Grátis no tier pessoal; pago no comercial |
+| Offline | Sim | Sim |
+| "Hey Jarvis" pronto | Sim (modelo pré-treinado) | Sim (keyword embutida "jarvis") |
+| Precisão | Muito boa | Excelente (referência do mercado) |
+| Latência/CPU | Leve (ONNX) | Muito leve (otimizado) |
+| Licença comercial | Permissiva (Apache-2.0) | Restrições no plano free |
+
+**Recomendação:** ficar com o **openWakeWord** — atende muito bem, é grátis e
+sem fricção. O Porcupine é um pouco mais preciso/leve e seria a troca natural
+**se** você notar falsos positivos/negativos na prática. Nesse caso:
+1. Criar a chave grátis em https://console.picovoice.ai
+2. Pôr em `PICOVOICE_ACCESS_KEY` no `.env`
+3. Me avisar que eu troco o backend da hotword (a interface já está isolada).
+
+Outras alternativas avaliadas e descartadas: **Snowboy** (descontinuado),
+**Mycroft Precise** (abandonado), detectar "jarvis" via Whisper contínuo
+(pesado demais para ficar sempre ligado).
 
 ---
 
@@ -114,7 +152,10 @@ Registro das escolhas de arquitetura, com o que foi descartado e por quê.
 | Ativação | **Push-to-talk** (Enter) | sem chave externa; destrava já | hotword Porcupine (precisa de chave) |
 | STT | **faster-whisper local** | grátis, offline, privado | OpenAI Whisper API (custo, envia áudio) |
 | TTS | **OpenAI TTS** (voz "nova") | voz natural; `say` era robótico (feedback do Wilson) | macOS `say` (fallback offline), ElevenLabs, Piper |
-| Detecção de fala | **energia/RMS** | menos dependências | webrtcvad (mais robusto) |
+| Hotword | **openWakeWord** ("hey_jarvis") | grátis, sem chave, offline | Picovoice Porcupine (precisa de chave) — ver comparação acima |
+| Confirmação (voz) | **falada** (`VoiceConfirmer`) | mãos-livres real; segurança mantida | manter confirmação digitada |
+| Interface | **terminal + bandeja rumps** (experimental) | bandeja dá cara de assistente; CLI continua estável | só terminal; janela GUI completa |
+| Detecção de fala | **energia/RMS auto-calibrada** | adapta ao ganho do mic | webrtcvad (mais robusto) |
 | Modelo STT padrão | **small** | bom equilíbrio qualidade×velocidade PT | tiny/base (pior), medium/large (pesado) |
 | Memória | SQLite + perfil no prompt | simples, sem infra | banco vetorial (fase futura) |
 
@@ -127,6 +168,11 @@ Registro das escolhas de arquitetura, com o que foi descartado e por quê.
   `gravar_ate_silencio` + STT transcreveu corretamente uma frase falada.
   VAD passou a auto-calibrar o limiar pelo ruído de fundo (o mic JBL tinha
   ganho baixo e o limiar fixo anterior poderia não detectar a fala).
+- ✅ Hotword carrega e roda (openWakeWord, modelo "hey_jarvis"); lógica de
+  confirmação por voz testada (sim/não). 33 testes passando.
+- ⚠️ **A testar ao vivo (Wilson)**: (1) dizer "Hey Jarvis" e ver se aciona;
+  (2) fluxo de confirmação falada numa ação de risco MÉDIO; (3) a bandeja
+  `python -m app.ui.tray` numa sessão gráfica.
 
 ### Riscos/limitações conhecidos
 - Python 3.14 é novo; as libs de voz têm wheel e funcionam, mas fique atento
@@ -145,7 +191,9 @@ python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 cp .env.example .env             # preencher OPENAI_API_KEY (ou outro provedor)
 
-.venv/bin/python -m app.main         # chat por texto
-.venv/bin/python -m app.main --voz   # conversa por voz (Enter para falar)
-.venv/bin/python -m pytest           # testes
+.venv/bin/python -m app.main           # chat por texto
+.venv/bin/python -m app.main --voz     # voz com hotword "Hey Jarvis"
+.venv/bin/python -m app.main --voz --ptt   # voz com push-to-talk (Enter)
+.venv/bin/python -m app.ui.tray        # bandeja na barra de menu (experimental)
+.venv/bin/python -m pytest             # testes
 ```
