@@ -23,9 +23,13 @@ _BLOCK = 1600  # ~100 ms por bloco de leitura.
 def gravar_ate_silencio(
     max_segundos: float = 15.0,
     silencio_seg: float = 1.2,
-    limiar: float = 0.015,
+    limiar: float | None = None,
 ) -> np.ndarray:
     """Grava do microfone até detectar silêncio (ou atingir o tempo máximo).
+
+    Se `limiar` for None (padrão), calibra automaticamente o limiar de fala
+    a partir do ruído de fundo medido nos primeiros ~0,4s — isso adapta a
+    detecção a microfones de ganhos diferentes.
 
     Retorna o áudio como ndarray float32 mono em 16 kHz. Importa o
     `sounddevice` aqui dentro para não exigir áudio em quem só usa texto.
@@ -41,6 +45,18 @@ def gravar_ate_silencio(
     with sd.InputStream(
         samplerate=SAMPLE_RATE, channels=1, dtype="float32", blocksize=_BLOCK
     ) as stream:
+        # Calibração: estima o ruído de fundo em ~0,4s (4 blocos de 100 ms).
+        if limiar is None:
+            ruido = []
+            for _ in range(4):
+                bloco, _ = stream.read(_BLOCK)
+                bloco = bloco.reshape(-1)
+                blocos.append(bloco)
+                ruido.append(float(np.sqrt(np.mean(bloco**2))))
+            piso = float(np.mean(ruido))
+            # Limiar = 3x o ruído de fundo, com um mínimo de segurança.
+            limiar = max(piso * 3.0, 0.008)
+
         for _ in range(max_blocos):
             bloco, _overflow = stream.read(_BLOCK)
             bloco = bloco.reshape(-1)

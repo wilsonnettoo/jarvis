@@ -42,7 +42,7 @@ Pipeline modular fala→texto→cérebro→fala, validado de ponta a ponta
 
 | Componente | Arquivo | Tecnologia |
 |------------|---------|-----------|
-| Captura do microfone | `app/audio/recorder.py` | `sounddevice` 16 kHz + VAD por energia (silêncio) |
+| Captura do microfone | `app/audio/recorder.py` | `sounddevice` 16 kHz + VAD por energia **auto-calibrada** (mede ruído de fundo) |
 | STT (fala → texto) | `app/audio/recorder.py` | `faster-whisper` local (modelo "small") |
 | TTS (texto → fala) | `app/audio/speaker.py` | **OpenAI TTS** (voz "nova") por padrão; `say` do macOS como fallback |
 | Hotword | `app/audio/hotword.py` | **stub** — hoje é push-to-talk (Enter) |
@@ -65,8 +65,8 @@ Estados exibidos no terminal: 🎤 ouvindo · 🧠 pensando · 🔊 falando.
 ## 🚧 Próximo
 
 ### Voz — completar
-- [ ] **Testar captura do microfone ao vivo** (só funciona no Mac do Wilson;
-      pode exigir permissão de Microfone no macOS na 1ª vez).
+- [x] **Captura do microfone ao vivo validada** no Mac do Wilson (transcreveu
+      frase falada corretamente; VAD auto-calibrada para o ganho do mic JBL).
 - [ ] Hotword "Jarvis" (Picovoice) — precisa de `PICOVOICE_ACCESS_KEY`.
 - [ ] Confirmações **faladas** para risco MÉDIO/ALTO (hoje a confirmação no
       modo voz ainda é digitada no terminal).
@@ -123,8 +123,10 @@ Registro das escolhas de arquitetura, com o que foi descartado e por quê.
 - ✅ TTS validado: OpenAI TTS (voz "nova") gera e toca áudio natural; `say`
   segue como fallback offline. (Troca feita após o Wilson achar o `say` ruim.)
 - ✅ LLM + ferramentas + guard de risco + auditoria: testados com API real.
-- ⚠️ **Não testado aqui**: captura do microfone ao vivo (ambiente sem mic).
-  É o único ponto a confirmar no Mac do Wilson.
+- ✅ Captura do microfone ao vivo validada no Mac do Wilson: a função
+  `gravar_ate_silencio` + STT transcreveu corretamente uma frase falada.
+  VAD passou a auto-calibrar o limiar pelo ruído de fundo (o mic JBL tinha
+  ganho baixo e o limiar fixo anterior poderia não detectar a fala).
 
 ### Riscos/limitações conhecidos
 - Python 3.14 é novo; as libs de voz têm wheel e funcionam, mas fique atento
