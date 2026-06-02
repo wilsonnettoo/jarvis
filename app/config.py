@@ -49,7 +49,8 @@ class Settings(BaseSettings):
     # Tamanho do modelo faster-whisper: tiny/base/small/medium/large-v3.
     # "small" é um bom equilíbrio de qualidade x velocidade em PT-BR.
     jarvis_stt_model: str = "small"
-    # Motor de TTS: "openai" (natural, usa OPENAI_API_KEY) ou "say" (macOS, offline).
+    # Motor de TTS: "xtts" (voz clonada local/grátis), "elevenlabs" (clonada
+    # na nuvem), "openai" (vozes prontas) ou "say" (macOS, offline).
     jarvis_tts_engine: str = "openai"
     # Modelo OpenAI de TTS (tts-1 = rápido; tts-1-hd = maior qualidade).
     jarvis_tts_model: str = "tts-1"
@@ -57,6 +58,14 @@ class Settings(BaseSettings):
     jarvis_openai_voice: str = "nova"
     # Voz do macOS `say` (fallback): ex. "Luciana" (PT-BR). Vazio = padrão.
     jarvis_tts_voice: str = "Luciana"
+
+    # --- Voz clonada (XTTS / ElevenLabs) ---
+    # Caminho de uma amostra de áudio (.wav/.mp3, ~6-30s) a ser clonada.
+    jarvis_voice_sample: str | None = None
+    # ElevenLabs (clonagem na nuvem): chave e id da voz.
+    elevenlabs_api_key: str | None = None
+    elevenlabs_voice_id: str | None = None
+    elevenlabs_model: str = "eleven_multilingual_v2"
 
     # --- Segurança ---
     # Quando True, ações de risco MÉDIO/ALTO sempre pedem confirmação.

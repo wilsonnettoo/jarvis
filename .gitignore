@@ -34,3 +34,8 @@ app/storage/profile.yaml
 # Editores
 .vscode/
 .idea/
+
+# Mídia (amostras de voz, vídeos) — não versionar
+*.mp4
+*.mov
+*.m4a

@@ -26,6 +26,14 @@ numpy>=1.26                # manipulação do buffer de áudio
 openwakeword>=0.6          # hotword "Hey Jarvis" local e grátis (SEM chave)
 # TTS padrão usa OpenAI (litellm.speech); `say` do macOS é o fallback.
 
+# --- Voz clonada (TTS com a sua voz) ---
+coqui-tts[codec]>=0.27     # XTTS-v2: clonagem de voz local e grátis
+torch>=2.9                 # backend do XTTS (não vem junto do coqui-tts)
+torchaudio>=2.9            # IO de áudio do XTTS
+transformers>=4.40,<5      # IMPORTANTE: XTTS quebra com transformers 5.x
+elevenlabs>=1.0            # clonagem de voz na nuvem (alternativa paga)
+# Requer o binário `ffmpeg` no sistema (brew install ffmpeg) para o torchcodec.
+
 # --- Interface (barra de menu macOS, experimental) ---
 rumps>=0.4                 # ícone de estado na barra de menu (app.ui.tray)
 

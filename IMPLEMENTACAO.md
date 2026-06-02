@@ -44,7 +44,8 @@ Pipeline modular fala→texto→cérebro→fala, validado de ponta a ponta
 |------------|---------|-----------|
 | Captura do microfone | `app/audio/recorder.py` | `sounddevice` 16 kHz + VAD por energia **auto-calibrada** (mede ruído de fundo) |
 | STT (fala → texto) | `app/audio/recorder.py` | `faster-whisper` local (modelo "small") |
-| TTS (texto → fala) | `app/audio/speaker.py` | **OpenAI TTS** (voz "nova") por padrão; `say` do macOS como fallback |
+| TTS (texto → fala) | `app/audio/speaker.py` | 4 motores: **xtts** (voz clonada local), **elevenlabs** (clonada nuvem), **openai** (vozes prontas), **say** (macOS) |
+| Voz clonada (XTTS) | `app/audio/speaker.py` + `record_sample.py` | clona uma voz a partir de amostra de ~20s (XTTS-v2 local, grátis) |
 | Hotword "Hey Jarvis" | `app/audio/hotword.py` | **openWakeWord** (grátis, offline, SEM chave) — modelo `hey_jarvis` |
 | Confirmação falada | `app/security/confirmations.py` | `VoiceConfirmer`: fala a pergunta e ouve sim/não para ações de risco |
 | Loop de voz | `app/main.py` (`modo_voz`) | hotword (ou `--ptt` push-to-talk) → STT → orquestrador → TTS |
@@ -149,7 +150,8 @@ Registro das escolhas de arquitetura, com o que foi descartado e por quê.
 | Interface (voz) | **Terminal rico** | zero deps, voz já funcionando | barra de menu (rumps), janela GUI |
 | Ativação | **Push-to-talk** (Enter) | sem chave externa; destrava já | hotword Porcupine (precisa de chave) |
 | STT | **faster-whisper local** | grátis, offline, privado | OpenAI Whisper API (custo, envia áudio) |
-| TTS | **OpenAI TTS** (voz "nova") | voz natural; `say` era robótico (feedback do Wilson) | macOS `say` (fallback offline), ElevenLabs, Piper |
+| TTS | **multi-motor** (xtts/elevenlabs/openai/say) | permite voz clonada do Wilson; OpenAI/say como fallback | um motor só fixo |
+| Voz clonada | **XTTS-v2 local** (em uso) + ElevenLabs (instalado) | grátis/offline para começar; ElevenLabs se quiser top de qualidade | só OpenAI (não clona) |
 | Hotword | **openWakeWord** ("hey_jarvis") | grátis, sem chave, offline | Picovoice Porcupine (precisa de chave) — ver comparação acima |
 | Confirmação (voz) | **falada** (`VoiceConfirmer`) | mãos-livres real; segurança mantida | manter confirmação digitada |
 | Interface | **terminal + bandeja rumps** (experimental) | bandeja dá cara de assistente; CLI continua estável | só terminal; janela GUI completa |
@@ -177,8 +179,15 @@ Registro das escolhas de arquitetura, com o que foi descartado e por quê.
   a incompatibilidades em libs futuras.
 - VAD por energia pode cortar cedo em ambiente barulhento — ajustar `limiar`
   e `silencio_seg` em `recorder.py` se necessário.
-- Latência do modo voz: STT local "small" em CPU tem alguns segundos de
-  atraso; cair para "base" acelera, ou usar Realtime/API no futuro.
+- Latência do modo voz: STT local "small" + XTTS em CPU somam alguns segundos
+  por turno. Para reduzir: STT "base", ou usar ElevenLabs/OpenAI no TTS.
+- **transformers fixado em <5**: o XTTS quebra com transformers 5.x
+  (`isin_mps_friendly`). Não atualizar transformers sem testar o XTTS.
+- **torchcodec exige o binário `ffmpeg`** instalado (brew install ffmpeg).
+- ⚖️ **Direitos da voz**: a amostra atual é a voz do JARVIS do filme Homem de
+  Ferro (Paul Bettany) — uso **pessoal** é ok, mas **evite uso comercial**
+  (ex.: atendimento/propagandas da MV Travel) por questão de direitos. Para
+  uso comercial, gravar/usar uma voz própria (`record_sample.py`).
 
 ---
 
@@ -193,5 +202,14 @@ cp .env.example .env             # preencher OPENAI_API_KEY (ou outro provedor)
 .venv/bin/python -m app.main --voz     # voz com hotword "Hey Jarvis"
 .venv/bin/python -m app.main --voz --ptt   # voz com push-to-talk (Enter)
 .venv/bin/python -m app.ui.tray        # bandeja na barra de menu (experimental)
+.venv/bin/python -m app.audio.record_sample 20 minha  # grava amostra p/ clonar
 .venv/bin/python -m pytest             # testes
+```
+
+Trocar a voz do Jarvis: no `.env`, `JARVIS_TTS_ENGINE=xtts` (clonada local) +
+`JARVIS_VOICE_SAMPLE=<caminho .wav>`; ou `openai`/`say` para vozes prontas.
+Hoje está em `xtts` com a amostra `app/storage/voz_sample.wav`.
+
+```bash
+# (já configurado no .env do Wilson)
 ```

@@ -28,20 +28,34 @@ class Speaker:
         self.macos_voice = voice if voice is not None else settings.jarvis_tts_voice
         self._say = shutil.which("say")
         self._afplay = shutil.which("afplay")
-        # Sem chave OpenAI, cai para o `say`.
+        self._xtts = None  # modelo XTTS carregado preguiçosamente
+        # Degrada para um motor utilizável se faltar pré-requisito.
         if self.engine == "openai" and not settings.openai_api_key:
             self.engine = "say"
+        if self.engine == "xtts" and not settings.jarvis_voice_sample:
+            # Sem amostra de voz não dá para clonar; usa OpenAI/say.
+            self.engine = "openai" if settings.openai_api_key else "say"
+        if self.engine == "elevenlabs" and not (
+            settings.elevenlabs_api_key and settings.elevenlabs_voice_id
+        ):
+            self.engine = "openai" if settings.openai_api_key else "say"
 
     # ------------------------------------------------------------------ #
     # API pública
     # ------------------------------------------------------------------ #
     def say(self, texto: str) -> None:
-        """Fala o texto. Tenta o motor configurado; em erro, usa o `say`."""
+        """Fala o texto pelo motor configurado; em erro, degrada para o `say`."""
         if not texto.strip():
             return
-        if self.engine == "openai":
+        motores = {
+            "xtts": self._falar_xtts,
+            "elevenlabs": self._falar_elevenlabs,
+            "openai": self._falar_openai,
+        }
+        falar = motores.get(self.engine)
+        if falar:
             try:
-                self._falar_openai(texto)
+                falar(texto)
                 return
             except Exception:  # noqa: BLE001 - degrada para o say
                 pass
@@ -81,6 +95,49 @@ class Speaker:
         player = self._afplay or shutil.which("afplay")
         if player:
             subprocess.run([player, str(destino)])
+        else:
+            raise RuntimeError("afplay indisponível para tocar o áudio")
+
+    def _falar_xtts(self, texto: str) -> None:
+        """Gera áudio com voz clonada (XTTS-v2 local) e toca com afplay."""
+        import os
+
+        os.environ.setdefault("COQUI_TOS_AGREED", "1")  # aceita licença não-interativa
+        if self._xtts is None:
+            from TTS.api import TTS
+
+            self._xtts = TTS("tts_models/multilingual/multi-dataset/xtts_v2")
+        destino = Path(tempfile.gettempdir()) / "jarvis_xtts.wav"
+        self._xtts.tts_to_file(
+            text=texto,
+            speaker_wav=settings.jarvis_voice_sample,
+            language=settings.jarvis_language,
+            file_path=str(destino),
+        )
+        self._tocar(destino)
+
+    def _falar_elevenlabs(self, texto: str) -> None:
+        """Gera áudio com voz clonada na ElevenLabs e toca com afplay."""
+        from elevenlabs.client import ElevenLabs
+
+        cliente = ElevenLabs(api_key=settings.elevenlabs_api_key)
+        audio = cliente.text_to_speech.convert(
+            voice_id=settings.elevenlabs_voice_id,
+            model_id=settings.elevenlabs_model,
+            text=texto,
+            output_format="mp3_44100_128",
+        )
+        destino = Path(tempfile.gettempdir()) / "jarvis_eleven.mp3"
+        with open(destino, "wb") as f:
+            for chunk in audio:
+                f.write(chunk)
+        self._tocar(destino)
+
+    def _tocar(self, caminho: Path) -> None:
+        """Toca um arquivo de áudio com afplay (macOS)."""
+        player = self._afplay or shutil.which("afplay")
+        if player:
+            subprocess.run([player, str(caminho)])
         else:
             raise RuntimeError("afplay indisponível para tocar o áudio")
 
